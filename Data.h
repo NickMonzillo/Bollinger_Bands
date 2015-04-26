@@ -8,8 +8,7 @@ using namespace std;
 
 class Data
 {
-public:
+protected:
 	vector <float> read_csv(string filename);
-	vector<float> prices;
 };
 #endif

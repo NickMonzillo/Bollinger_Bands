@@ -6,15 +6,23 @@ using namespace std;
 
 vector<float> Data::read_csv(string filename)
 {
+	vector<float> PricesTemp;
+	vector<float> data;
 	ifstream in(filename);
 	if(in)
 	{
 		string line;
 		while(getline(in,line))
 		{
-			prices.push_back(stod(line));
+			PricesTemp.push_back(stod(line));
 		}
 	}
 	in.close();
-	return prices;
+	int count = PricesTemp.size() - 1;
+	for( int i=count; i >= 0; i--)
+	{
+		data.push_back(PricesTemp.at(i));
+	}
+
+	return data;
 }
