@@ -5,6 +5,7 @@
 using namespace std;
 
 vector<float> Data::read_csv(string filename)
+	//Reads in a .csv file and returns it as a vector.
 {
 	vector<float> PricesTemp;
 	vector<float> data;

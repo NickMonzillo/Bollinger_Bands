@@ -35,6 +35,8 @@ void Strategy::bands(vector<float> prices,float standard_devs)
 {
 	top_band = avg(prices) + std_dev(prices)*standard_devs;
 	bottom_band = avg(prices) - std_dev(prices)*standard_devs;
+
+	//Fills in the vectors used for graphing.
 	top_band_vec.push_back(top_band);
 	bottom_band_vec.push_back(bottom_band);
 }
@@ -79,7 +81,7 @@ void Strategy::buy(int num_shares,float price)
 void Strategy::run(float std_devs,int num_prices)
 	//Runs the trading strategy.
 {
-	string file_path = "../CSV/GSPC.csv";
+	string file_path = "C:/Users/Class2016/Downloads/ADS.csv"; //Change this to the appropriate path
 	price_data = read_csv(file_path);
 	signal = 0;
 	int prev_signal = 0;
@@ -89,39 +91,40 @@ void Strategy::run(float std_devs,int num_prices)
 	float temp_buy = 0.0;
 	float temp_sell = 0.0;
 	for(int index = num_prices + 1; index < price_data.size(); index++)
+		//Iterates through all of the data. This is the main loop in our strategy.
 	{
-		vector<float> prices_subset = subset(index - num_prices - 1,index,price_data);
+		vector<float> prices_subset = subset(index - num_prices - 1,index,price_data); //Subsets the data vector into a smaller one to calculate the rolling moving average.
 		bands(prices_subset,std_devs);
 		float current_price = price_data[index];
 		if(current_price > top_band)
 			//If the share price is above the threshold -> sell
 		{
 			signal = -1;
-			share_count = ceil((current_price - top_band)/std_dev(prices_subset));
-			total_share_count += share_count;
-			sell(share_count,current_price);
-			temp_sell += share_count*current_price;
 			if(prev_signal == 1)
+				//If the previous period was below the bottom band, liquidate shares.
 				{
 					sell(total_share_count,current_price);
 					temp_sell += total_share_count*current_price;
 					if(temp_buy != 0){
+					//Calculates the return of the transaction.
 					returns.push_back((temp_sell-temp_buy)/temp_buy);
 					}
 					temp_sell = 0;
 					temp_buy = 0;
 					total_share_count = 0;
 				}
+			share_count = ceil((current_price - top_band)/std_dev(prices_subset)); //Calculates the amount of shares to buy.
+			//Buys and sells based on the number of standard deviations the price is outside the band.
+			total_share_count += share_count;
+			sell(share_count,current_price);
+			temp_sell += share_count*current_price;
+			
 		}
 		else{
 			//If the share price is below the threshold -> buy
 			if(current_price < bottom_band)
 			{
 				signal = 1;
-				share_count = ceil((bottom_band - current_price)/std_dev(prices_subset));
-				total_share_count += share_count;
-				buy(share_count,current_price);
-				temp_buy += share_count*current_price;
 				if(prev_signal == -1)
 				{
 					buy(total_share_count,current_price);
@@ -133,12 +136,18 @@ void Strategy::run(float std_devs,int num_prices)
 					temp_buy = 0;
 					total_share_count = 0;
 				}
+				share_count = ceil((bottom_band - current_price)/std_dev(prices_subset));
+				total_share_count += share_count;
+				buy(share_count,current_price);
+				temp_buy += share_count*current_price;
+				
 			}
 			else
 				//If it's in between, check if you just sold or bought. If so, liquidate position. If not, do nothing.
 			{
 				signal = 0;
 				if(prev_signal == 1)
+					//If you were below the band in the previous period, liquidate position.
 				{
 					sell(total_share_count,current_price);
 					temp_sell += total_share_count*current_price;
@@ -149,6 +158,7 @@ void Strategy::run(float std_devs,int num_prices)
 					temp_buy = 0;
 				}
 				if(prev_signal == -1)
+					//If you were above the band in the previous period, liquidate position.
 				{
 					buy(total_share_count,current_price);
 					temp_buy += total_share_count*current_price;
@@ -164,8 +174,8 @@ void Strategy::run(float std_devs,int num_prices)
 		}
 		prev_signal = signal;
 		signal_vec.push_back(signal);
-
 	}
+
 	cout<< "Buys: " << buy_prices.size() << endl;
 	cout<< "Sells: " << sell_prices.size() << endl;
 	cout<< "Average Return: " << avg(returns) << endl;

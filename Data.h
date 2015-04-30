@@ -9,6 +9,6 @@ using namespace std;
 class Data
 {
 protected:
-	vector <float> read_csv(string filename);
+	vector <float> read_csv(string filename); //Reads in a .csv file and returns the contents as a vector
 };
 #endif
