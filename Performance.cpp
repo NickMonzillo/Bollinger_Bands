@@ -12,7 +12,7 @@ void Performance::write_file(vector<vector<float>> input_vec, string filename)
 	outputFile.open(filename);
 	for(int i = 0;i < input_vec.size();i++)
 	{
-		for(int j = 0; j < input_vec[j].size();j++)
+		for(int j = 0; j < input_vec[i].size();j++)
 		{
 			outputFile << input_vec[i].at(j);
 			outputFile << '\n';
